@@ -1,0 +1,174 @@
+---
+title: "Examen Metodos No Parametricos  \nJesus Emmanuel Ramos Davila  \nMatricula: 1439401 "
+output:
+  pdf_document: default
+  html_document: default
+date: '2023-07-20'
+header-includes:
+   - \usepackage[spanish]{babel}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(HH)
+
+```
+
+## Problemas
+
+
+1- Un estudio de Darwin (1876), discutido en Hand et al. (1994) con los datos de data(darwin), compararon las alturas finales de plantas cultivadas a partir de plantas comparables que fueron fertilizadas-cruzadas o auto-fertilizadas. Compare las alturas utilizando el procedimiento de rangos con signo de Wilcoxon. 
+
+_Aplicando prueba se con signo de Wilcoxon_
+```{r Codigorespuesta1, echo=F}
+data("darwin")
+dw <- darwin
+wilcox.test(dw$cross, dw$self, paired = F)
+```
+
+_Dado el p_valor 0.0026 es menor a alfa 0.05 se rechaza Ho , las alturas de las plantas son diferentes_
+
+¿Habría sido apropiada una prueba t pareada?
+
+_No dado que la prueba t pareada se utiliza para comparar medias de dos muestrar relacionadas , esto es cuando se tienen mediciones repetidas en las mismos elementos, en este estudio se menciona que fueron plantas que fueron fertilizadas-cruzadas o auto-fertilizadas por lo tanto implica grupos diferentes_
+
+2- VanVliet y Gupta (1973), citado posteriormente por Hand et al. (1994), compararon los pesos al nacer en kg de 50 lactantes con sindrome de dificultad respiratoria grave. 27 de estos bebes murieron posteriormente y el resto sobrevivio. Los datos aparecen en el archivo data(distress). Realice una prueba no parametrica para determinar si las muertes por esta causa estan asociadas con el bajo peso al nacer.
+
+
+_Aplicando prueba de Kolmogorov-Smirnov_
+```{r Codigorespuesta2, echo=F , warning=F}
+data('distress')
+distress <- distress
+died <- dplyr::filter(distress, outcome == 'died')
+live <- dplyr::filter(distress, outcome == 'lived')
+ks.test(died$birthwt, live$birthwt)
+#miller.jack(died$birthwt, live$birthwt, alternative = 'two.sided')
+```
+
+
+
+3-Senie et al. (1981), tambien en Hand et al. (1994), investigan si la frecuencia del autoexamen de mamas este relacionada con el grupo de edad. Los datos aparecen accedidos como datos (selfexam).  Si es asi, describalo.
+
+_Aplicando Chi-sqared test a la tabla de contingencia de selfexam_
+
+	\nPearson s Chi-squared test
+
+data:  selfexam
+X-squared = 25.086, df = 4, p-value = 4.835e-05
+
+¿Estas de acuerdo en que hay una relacion?
+
+Dado que el _p_value_ es menor a alfa 0.05 , concluimos que existe una relacion en los autoexamenes por cada grupo de edad.
+
+
+4-Sea p la probabilidad de exito en un experimento Bernoulli. Suponga que queremos probar
+H0 : p = 0.30 vs HA : p < 0.30. Sea S el número de exitos en 75 intentos. Suponga que rechazamos
+H0,si S <= 16.
+
+(a) Determine el nivel de significancia de la prueba
+
+
+
+```{r Codigorespuesta4A, echo=F , warning=F}
+
+p <- 0.30
+n <- 75
+alpa_calculado <- pbinom(16, n, p, lower.tail = T)
+
+```
+
+Alpha calculado: **0.06199**
+
+(b) Determine la potencia de la prueba si el verdadero valor de p es 0.25.
+
+_Realizando una prueba de Wilcoxon Test para una multiples experimentos de Bernoulli se encontro que para dos distribuciones p = 0.3 y p = 0.25 se encontro que la potencia aproximada es de 0.046._ 
+
+(c) Determine la funcion potencia para la prueba para las siguientes valores de probabilidad de
+exito {0.02, 0.03, . . . , 0.35}. grafique la funcion potencia
+
+_Aplicando funcion de potencia para los siguientes valores_
+
+
+```{r plotPowerFunction, echo=F, warning=F, fig.align = 'left'}
+m <- 30
+
+n <- 30
+
+alpha <- 0.05
+p_true <- 0.25
+
+d <- seq(from=0.02, to=0.35, 0.01)
+
+
+
+rep <- 1000
+
+cont <- 0
+
+t <- c()
+
+
+
+for(j in 1:34){
+  
+  cont <- 0
+  
+  for(i in 1:rep){
+    
+    x <- rbinom(m,size = 75, prob = 0.25)
+    
+    y <- rbinom(n,size = 75, prob = d[j])
+    
+    
+    
+    if(wilcox.test(x,y, alternative = "t")$p.value<p_true)
+      
+    {
+      
+      cont <- cont + 1
+      
+    }
+    
+  }
+  
+  p <- cont/rep
+  
+  t[j] <- p
+  
+}
+plot(t)
+```
+
+
+5-En el proceso de cateterismo, un cateter de 3-mm de diametro es insertado en una
+vena o arteria en la region femoral. Este procedimiento, en ocasiones se realiza en ninos con problemas congenitos. En estos casos, la longitud del cateter es determinada por el juicio del doctor. Rice (2007) estudio datos de 12 ninos para revisar la importancia del peso y estatura de los ninos en la longitud del cateter. Tome como variable independiente el diametro del cateter y haga un analisis de regresion.
+
+_Realizando una prueba de regresion multiple  (Rangos. JAECKEL, HETTMANSPERGER–McKEAN)_
+
+Call:
+rfit.default(formula = leng_cat ~ weigth + heigth, data = df)
+
+Coefficients:
+             Estimate Std. Error t.value p.value   
+(Intercept) 25.921266   7.550101  3.4332 0.00747 **
+weigth       0.245570   0.142480  1.7235 0.11888   
+heigth       0.029114   0.311060  0.0936 0.92748   
+
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Multiple R-squared (Robust): 0.7768163 
+Reduction in Dispersion Test: 15.66277 p-value: 0.00117 
+
+```{r multipleLinearReg, echo=F, warning=F}
+#child <- c(1,2,3,4,5,6,7,8,9,10,11,12)
+heigth <- c(42.8, 63.5, 37.5, 39.5, 45.5, 38.5, 43.0, 22.5, 37.0, 23.5, 33.0, 58.0)
+weigth <- c(40.0, 93.5, 35.5, 30.0 , 52.0 , 17.0, 38.5, 8.5, 33.0, 9.5, 21.0, 79.0)
+leng_cat <- c(37.0, 49.5, 34.5, 36.0, 43.0, 28.0, 37.0, 20.0, 33.5, 30.5, 38.5, 47.0)
+df <- data.frame(heigth, weigth, leng_cat)
+#rfit.default(formula = leng_cat ~ weigth + heigth , data=df)
+```
+
+**Observaciones** : _Se observo en la regression lineal multiple que para el diametro del cateter se obtuvo una **R-Ajustada** de 0.77_
+
+
+
